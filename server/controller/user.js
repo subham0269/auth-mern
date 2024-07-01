@@ -1,8 +1,8 @@
 import userModel from "../models/users.js";
 
 export const handleUserSignup = async (req, res) => {
+   const { username, email, password } = req.body;
    try {
-      const { username, email, password } = req.body;
       const userObj = await userModel.create({ username, email, password })
       if (!userObj) {
          res.status(400).json({Error: 'Failed to create User'})
@@ -24,4 +24,20 @@ export const handleUserSignup = async (req, res) => {
 }
 
 export const handleUserLogin = async (req, res) => {
+   const {identifier, password} = req.body;
+   try {
+      const usr = await userModel.findOne({
+         $or: [{email: identifier}, {username: identifier}]
+      })
+      if (!usr) {
+         return res.status(401).json({Error: 'Invalid email/username or password'})
+      }
+      if (usr.password === password) {
+         return res.status(200).json({message: 'Login successful', user: {id: usr._id, username: usr.username, email: usr.email}})
+      } else {
+         return res.status(401).json({Error: 'Invalid email/username or password'})
+      }
+   } catch (err) {
+      console.log('Error in login api\n', err.errorResponse);
+   }
 }
