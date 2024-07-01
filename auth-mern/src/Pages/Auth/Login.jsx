@@ -25,8 +25,9 @@ const Login = () => {
    const handleSubmit = async (e) => {
       e.preventDefault();
       console.log('hi');
-      console.log(state.email, state.password);
+      // console.log(state.email, state.password);
       const usrLogin = await (userLogin(state));
+      console.log('from login api', usrLogin);
    }
    
    return (
