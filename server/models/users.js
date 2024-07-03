@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
 import dotenv from 'dotenv';
+import { hashPassword } from "../utils/cryptoHelpers.js";
 dotenv.config();
 const userSchema = mongoose.Schema({
    username: {
@@ -9,30 +9,29 @@ const userSchema = mongoose.Schema({
       unique: true
    },
    email: {
-      type:String,
+      type: String,
       required: true,
       unique: true
    },
+   salt: {
+      type: String,
+   },
    password: {
-      type:String,
-      required:true
+      type: String,
+      required: true
    }
 
-}, {timestamps: true})
+}, { timestamps: true })
 
-userSchema.pre('save', async function (next)  {
+userSchema.pre('save', function (next) {
    try {
-      const salt = await bcrypt.genSalt(9);
-      this.password = await bcrypt.hash(this.password, salt);
+      const { salt, hash } = hashPassword(this.password)
+      this.salt = salt;
+      this.password = hash;
    } catch (err) {
       console.log('error in user schema middleware', err);
-   } finally {
-      next();
    }
-   
-   console.log(hash);
    next();
-   // bcrypt.hash(this.password, salt_roundes)
 })
 const userModel = mongoose.model('user-auth', userSchema);
 
