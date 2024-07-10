@@ -1,5 +1,6 @@
 import userModel from "../models/users.js";
 import { checkPasswordHash } from "../utils/cryptoHelpers.js";
+import generateAccessToken from "../utils/jwt.js";
 
 export const handleUserSignup = async (req, res) => {
    const { username, email, password } = req.body;
@@ -8,14 +9,10 @@ export const handleUserSignup = async (req, res) => {
       if (!userObj) {
          res.status(400).json({Error: 'Failed to create User'})
       }
+      const token = generateAccessToken(userObj._id)
       res.status(200).json({
          message: "User created successfully",
-         user: {
-            id: userObj._id,
-            username: userObj.username,
-            email:userObj.email,
-            createdAt: userObj.createdAt
-         }
+         token: token
       })
       
    } catch (err) {
@@ -43,13 +40,10 @@ export const handleUserLogin = async (req, res) => {
          return res.status(401).json({Error: 'Invalid email/username or password'})
       }
       if (checkPasswordHash(password, usr.password, usr.salt)) {
+         const generateToken = generateAccessToken(usr._id);
          return res.status(200).json({
             message: 'Login successful',
-            user: {
-               id: usr._id,
-               username: usr.username,
-               email: usr.email
-            }})
+            token: generateToken})
       } else {
          return res.status(401).json({Error: 'Invalid email/username or password'})
       }
